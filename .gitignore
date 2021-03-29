@@ -272,4 +272,5 @@ Thumbs.db #thumbnail cache on Windows
 !.vscode/extensions.json
 *.code-workspace
 
+.data*
 # End of https://www.toptal.com/developers/gitignore/api/pycharm+all,git,vscode,python,jupyternotebooks

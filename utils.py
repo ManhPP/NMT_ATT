@@ -1,19 +1,8 @@
-from torchtext.legacy.datasets import Multi30k
-from torchtext.legacy.data import Field, BucketIterator
+import de_core_news_sm
+import en_core_web_sm
 import torch
 import torch.nn as nn
 import torch.optim as optim
-
-import spacy
-import numpy as np
-
-from typing import Tuple
-import random
-import math
-import time
-
-import de_core_news_sm
-import en_core_web_sm
 
 
 def tokenize_de(text):
