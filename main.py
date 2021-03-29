@@ -42,8 +42,7 @@ def run():
                 eos_token='<eos>',
                 lower=True)
 
-    train_data, valid_data, test_data = Multi30k.splits(exts=('.de', '.en'),
-                                                        fields=(SRC, TRG))
+    train_data, valid_data, test_data = Multi30k.splits(exts=('.de', '.en'), fields=(SRC, TRG))
     SRC.build_vocab(train_data, min_freq=2)
     TRG.build_vocab(train_data, min_freq=2)
 
@@ -61,8 +60,9 @@ def run():
 
     model = Seq2Seq(enc, dec, device).to(device)
 
-    a = model.apply(init_weights)
-    print(a)
+    model_summary = model.apply(init_weights)
+    print(model_summary)
+    print(f'The model has {count_parameters(model):,} trainable parameters')
 
     optimizer = optim.Adam(model.parameters())
     TRG_PAD_IDX = TRG.vocab.stoi[TRG.pad_token]
