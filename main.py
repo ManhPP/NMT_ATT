@@ -2,6 +2,7 @@ import math
 import time
 
 import numpy as np
+from torchtext.data import bleu_score
 from torchtext.legacy.data import Field, BucketIterator
 from torchtext.legacy.datasets import Multi30k
 
@@ -27,7 +28,7 @@ ATTN_DIM = 64
 ENC_DROPOUT = 0.5
 DEC_DROPOUT = 0.5
 
-N_EPOCHS = 20
+N_EPOCHS = 15
 CLIP = 1
 
 
@@ -58,7 +59,7 @@ def run():
     enc = Encoder(INPUT_DIM, ENC_EMB_DIM, ENC_HID_DIM, DEC_HID_DIM, ENC_DROPOUT)
     dec = Decoder(OUTPUT_DIM, DEC_EMB_DIM, ENC_HID_DIM, DEC_HID_DIM, DEC_DROPOUT, attn)
 
-    model = Seq2Seq(enc, dec, device).to(device)
+    model = Seq2Seq(enc, dec, device, SRC, TRG).to(device)
 
     model_summary = model.apply(init_weights)
     print(model_summary)
@@ -93,3 +94,4 @@ def run():
 
 if __name__ == '__main__':
     run()
+    # bleu_score()
