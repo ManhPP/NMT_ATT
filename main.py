@@ -93,5 +93,28 @@ def run():
 
 
 if __name__ == '__main__':
-    run()
+    # run()
     # bleu_score()
+    SRC = Field(tokenize=tokenize_de,
+                init_token='<sos>',
+                eos_token='<eos>',
+                lower=True)
+
+    TRG = Field(tokenize=tokenize_en,
+                init_token='<sos>',
+                eos_token='<eos>',
+                lower=True)
+
+    train_data, valid_data, test_data = Multi30k.splits(exts=('.de', '.en'), fields=(SRC, TRG))
+    SRC.build_vocab(train_data, min_freq=2)
+    TRG.build_vocab(train_data, min_freq=2)
+    INPUT_DIM = len(SRC.vocab)
+    OUTPUT_DIM = len(TRG.vocab)
+    attn = Attention(ENC_HID_DIM, DEC_HID_DIM)
+    enc = Encoder(INPUT_DIM, ENC_EMB_DIM, ENC_HID_DIM, DEC_HID_DIM, ENC_DROPOUT)
+    dec = Decoder(OUTPUT_DIM, DEC_EMB_DIM, ENC_HID_DIM, DEC_HID_DIM, DEC_DROPOUT, attn)
+
+    model = Seq2Seq(enc, dec, device, SRC, TRG).to(device)
+    model.load_state_dict(torch.load("tut3-model.pt"))
+
+    a = 5
