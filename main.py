@@ -32,20 +32,11 @@ N_EPOCHS = 10
 CLIP = 1
 
 
-def run(SRC, TRG, train_data, valid_data, test_data):
+def run(model, SRC, TRG, train_data, valid_data, test_data):
     train_iterator, valid_iterator, test_iterator = BucketIterator.splits(
         (train_data, valid_data, test_data),
         batch_size=BATCH_SIZE,
         device=device)
-
-    INPUT_DIM = len(SRC.vocab)
-    OUTPUT_DIM = len(TRG.vocab)
-
-    attn = Attention(ENC_HID_DIM, DEC_HID_DIM)
-    enc = Encoder(INPUT_DIM, ENC_EMB_DIM, ENC_HID_DIM, DEC_HID_DIM, ENC_DROPOUT)
-    dec = Decoder(OUTPUT_DIM, DEC_EMB_DIM, ENC_HID_DIM, DEC_HID_DIM, DEC_DROPOUT, attn)
-
-    model = Seq2Seq(enc, dec, device).to(device)
 
     model_summary = model.apply(init_weights)
     print(model_summary)
@@ -92,7 +83,16 @@ if __name__ == '__main__':
     train_data, valid_data, test_data = Multi30k.splits(exts=('.de', '.en'), fields=(SRC, TRG))
     SRC.build_vocab(train_data, min_freq=2)
     TRG.build_vocab(train_data, min_freq=2)
-    run(SRC, TRG, train_data, valid_data, test_data)
-    # bleu_score()
-    TRG.preprocess()
 
+    INPUT_DIM = len(SRC.vocab)
+    OUTPUT_DIM = len(TRG.vocab)
+
+    attn = Attention(ENC_HID_DIM, DEC_HID_DIM)
+    enc = Encoder(INPUT_DIM, ENC_EMB_DIM, ENC_HID_DIM, DEC_HID_DIM, ENC_DROPOUT)
+    dec = Decoder(OUTPUT_DIM, DEC_EMB_DIM, ENC_HID_DIM, DEC_HID_DIM, DEC_DROPOUT, attn)
+
+    model = Seq2Seq(enc, dec, device).to(device)
+    model.load_state_dict(torch.load("tut3-model.pt"))
+    model.eval()
+    # run(model, SRC, TRG, train_data, valid_data, test_data)
+    # bleu_score()
