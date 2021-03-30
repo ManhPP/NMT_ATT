@@ -151,6 +151,6 @@ def cal_bleu_score(data, model, source_vocab, target_vocab, device):
 
         predictions.append(
             translate(model.encoder, model.decoder, " ".join(src), source_vocab, target_vocab, device)[0])
-        targets.append(trg)
+        targets.append([trg])
 
     print(f'BLEU Score: {round(bleu_score(predictions, targets) * 100, 2)}')

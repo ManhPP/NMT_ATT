@@ -69,7 +69,7 @@ def run(model, SRC, TRG, train_data, valid_data, test_data):
 
     test_loss = evaluate(model, test_iterator, criterion)
     print(f'\t Val. Loss: {test_loss:.3f}')
-    cal_bleu_score(train_data, model, SRC, TRG)
+    cal_bleu_score(train_data, model, SRC, TRG, device)
 
 
 if __name__ == '__main__':
