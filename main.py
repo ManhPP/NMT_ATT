@@ -92,7 +92,7 @@ if __name__ == '__main__':
     dec = Decoder(OUTPUT_DIM, DEC_EMB_DIM, ENC_HID_DIM, DEC_HID_DIM, DEC_DROPOUT, attn)
 
     model = Seq2Seq(enc, dec, device).to(device)
-    model.load_state_dict(torch.load("tut3-model.pt"))
+    model.load_state_dict(torch.load("tut3-model.pt", map_location=device))
     model.eval()
     # run(model, SRC, TRG, train_data, valid_data, test_data)
     # bleu_score()
