@@ -3,6 +3,7 @@ import en_core_web_sm
 import torch
 import torch.nn as nn
 import torch.optim as optim
+from torchtext.data import bleu_score
 
 spacy_de = de_core_news_sm.load()
 spacy_en = en_core_web_sm.load()
@@ -135,4 +136,21 @@ def translate(encoder, decoder, sentence, src, trg, device, max_length=512):
 
             decoder_input = topi.squeeze(0).detach()
 
-        return " ".join(decoded_words), decoder_attentions
+        return decoded_words, decoder_attentions
+
+
+def cal_bleu_score(data, model, source_vocab, target_vocab, device):
+    model.eval()
+
+    targets = []
+    predictions = []
+
+    for sample in data:
+        src = sample.src
+        trg = sample.trg
+
+        predictions.append(
+            translate(model.encoder, model.decoder, " ".join(src), source_vocab, target_vocab, device)[0])
+        targets.append(trg)
+
+    print(f'BLEU Score: {round(bleu_score(predictions, targets) * 100, 2)}')

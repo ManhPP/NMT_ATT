@@ -2,7 +2,6 @@ import math
 import time
 
 import numpy as np
-from torchtext.data import bleu_score
 from torchtext.legacy.data import Field, BucketIterator
 from torchtext.legacy.datasets import Multi30k
 
@@ -67,6 +66,10 @@ def run(model, SRC, TRG, train_data, valid_data, test_data):
         print(f'Epoch: {epoch + 1:02} | Time: {epoch_mins}m {epoch_secs}s')
         print(f'\tTrain Loss: {train_loss:.3f} | Train PPL: {math.exp(train_loss):7.3f}')
         print(f'\t Val. Loss: {valid_loss:.3f} |  Val. PPL: {math.exp(valid_loss):7.3f}')
+
+    test_loss = evaluate(model, test_iterator, criterion)
+    print(f'\t Val. Loss: {test_loss:.3f}')
+    cal_bleu_score(train_data, model, SRC, TRG)
 
 
 if __name__ == '__main__':
