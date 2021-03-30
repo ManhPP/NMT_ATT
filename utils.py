@@ -109,36 +109,30 @@ def init_weights(m):
 
 def translate(encoder, decoder, sentence, src, trg, device, max_length=512):
     with torch.no_grad():
-
         input_tensor = [src.vocab.stoi[word] for word in sentence.split(' ')]
-        input_length = input_tensor.size()[0]
-        encoder_hidden = encoder.initHidden()
+        input_tensor.append(src.vocab.stoi[src.eos_token])
+        input_tensor = torch.tensor(input_tensor, dtype=torch.long, device=device).view(-1, 1)
 
-        encoder_outputs = torch.zeros(len(trg), encoder.hidden_size, device=device)
+        encoder_outputs, hidden = encoder(input_tensor)
 
-        for ei in range(input_length):
-            encoder_output, encoder_hidden = encoder(input_tensor[ei],
-                                                     encoder_hidden)
-            encoder_outputs[ei] += encoder_output[0, 0]
+        decoder_input = torch.tensor([trg.vocab.stoi[trg.init_token]], device=device)
 
-        decoder_input = torch.tensor([[trg.vocab.stoi[trg.init_token]]], device=device)  # SOS
-
-        decoder_hidden = encoder_hidden
+        decoder_hidden = hidden
 
         decoded_words = []
-        decoder_attentions = torch.zeros(max_length, max_length)
+        decoder_attentions = []
 
         for di in range(max_length):
             decoder_output, decoder_hidden, decoder_attention = decoder(
                 decoder_input, decoder_hidden, encoder_outputs)
-            decoder_attentions[di] = decoder_attention.data
+            decoder_attentions.append(decoder_attention.data.tolist())
             topv, topi = decoder_output.data.topk(1)
             if topi.item() == trg.vocab.stoi[trg.eos_token]:
-                decoded_words.append('<EOS>')
+                # decoded_words.append('<EOS>')
                 break
             else:
                 decoded_words.append(trg.vocab.itos[topi.item()])
 
-            decoder_input = topi.squeeze().detach()
+            decoder_input = topi.squeeze(0).detach()
 
-        return decoded_words, decoder_attentions[:di + 1]
+        return " ".join(decoded_words), decoder_attentions
