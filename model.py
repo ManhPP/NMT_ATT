@@ -301,5 +301,5 @@ class Seq2Seq(nn.Module):
 
     def decode(self, src, trg):
         encoder_output, hidden = self.encoder(src)
-        hidden = hidden[:self.decoder.n_layers]
+        hidden = hidden[:1]
         self.beam_decode(trg, hidden, encoder_output)
