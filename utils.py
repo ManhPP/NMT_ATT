@@ -154,3 +154,4 @@ def cal_bleu_score(data, model, source_vocab, target_vocab, device):
         targets.append([trg])
 
     print(f'BLEU Score: {round(bleu_score(predictions, targets) * 100, 2)}')
+
