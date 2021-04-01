@@ -31,7 +31,7 @@ N_EPOCHS = 10
 CLIP = 1
 
 
-def run(model, SRC, TRG, train_data, valid_data, test_data, model_name="nmt-model.pt"):
+def run(model, SRC, TRG, train_data, valid_data, test_data, model_name="nmt-model-attn.pt"):
     train_iterator, valid_iterator, test_iterator = BucketIterator.splits(
         (train_data, valid_data, test_data),
         batch_size=BATCH_SIZE,
@@ -69,7 +69,7 @@ def run(model, SRC, TRG, train_data, valid_data, test_data, model_name="nmt-mode
 
     test_loss = evaluate(model, test_iterator, criterion)
     print(f'\t Test. Loss: {test_loss:.3f}')
-    cal_bleu_score(train_data, model, SRC, TRG, device, 'rnn' not in model_name)
+    cal_bleu_score(train_data, model, SRC, TRG, device, 'attn' in model_name)
 
 
 if __name__ == '__main__':
@@ -103,7 +103,7 @@ if __name__ == '__main__':
     dec_rnn = DecoderRNN(OUTPUT_DIM, DEC_EMB_DIM, ENC_HID_DIM, DEC_HID_DIM, DEC_DROPOUT)
 
     model_rnn = Seq2SeqRNN(enc_rnn, dec_rnn, device).to(device)
-    run(model_rnn, SRC, TRG, train_data, valid_data, test_data, "nmt-model-rnn.pt")
+    run(model_rnn, SRC, TRG, train_data, valid_data, test_data, "nmt-model-base.pt")
 
     # model.load_state_dict(torch.load("nmt-model-rnn.pt", map_location=device))
     # model.eval()
