@@ -68,7 +68,7 @@ def run(model, SRC, TRG, train_data, valid_data, test_data, model_name="nmt-mode
         print(f'\t Val. Loss: {valid_loss:.3f} |  Val. PPL: {math.exp(valid_loss):7.3f}')
 
     test_loss = evaluate(model, test_iterator, criterion)
-    print(f'\t Val. Loss: {test_loss:.3f}')
+    print(f'\t Test. Loss: {test_loss:.3f}')
     cal_bleu_score(train_data, model, SRC, TRG, device)
 
 
@@ -100,7 +100,7 @@ if __name__ == '__main__':
     run(model, SRC, TRG, train_data, valid_data, test_data)
 
     enc_rnn = Encoder(INPUT_DIM, ENC_EMB_DIM, ENC_HID_DIM, DEC_HID_DIM, ENC_DROPOUT)
-    dec_rnn = Decoder(OUTPUT_DIM, DEC_EMB_DIM, ENC_HID_DIM, DEC_HID_DIM, DEC_DROPOUT)
+    dec_rnn = DecoderRNN(OUTPUT_DIM, DEC_EMB_DIM, ENC_HID_DIM, DEC_HID_DIM, DEC_DROPOUT)
 
     model_rnn = Seq2SeqRNN(enc_rnn, dec_rnn, device).to(device)
     run(model_rnn, SRC, TRG, train_data, valid_data, test_data, "nmt-model-rnn.pt")
