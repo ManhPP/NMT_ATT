@@ -31,7 +31,7 @@ N_EPOCHS = 10
 CLIP = 1
 
 
-def run(model, SRC, TRG, train_data, valid_data, test_data):
+def run(model, SRC, TRG, train_data, valid_data, test_data, model_name="nmt-model.pt"):
     train_iterator, valid_iterator, test_iterator = BucketIterator.splits(
         (train_data, valid_data, test_data),
         batch_size=BATCH_SIZE,
@@ -61,7 +61,7 @@ def run(model, SRC, TRG, train_data, valid_data, test_data):
 
         if valid_loss < best_valid_loss:
             best_valid_loss = valid_loss
-            torch.save(model.state_dict(), 'tut3-model.pt')
+            torch.save(model.state_dict(), model_name)
 
         print(f'Epoch: {epoch + 1:02} | Time: {epoch_mins}m {epoch_secs}s')
         print(f'\tTrain Loss: {train_loss:.3f} | Train PPL: {math.exp(train_loss):7.3f}')
@@ -95,7 +95,15 @@ if __name__ == '__main__':
     dec = Decoder(OUTPUT_DIM, DEC_EMB_DIM, ENC_HID_DIM, DEC_HID_DIM, DEC_DROPOUT, attn)
 
     model = Seq2Seq(enc, dec, device).to(device)
-    model.load_state_dict(torch.load("tut3-model.pt", map_location=device))
-    model.eval()
-    # run(model, SRC, TRG, train_data, valid_data, test_data)
-    # bleu_score()
+    # model.load_state_dict(torch.load("nmt-model.pt", map_location=device))
+    # model.eval()
+    run(model, SRC, TRG, train_data, valid_data, test_data)
+
+    enc_rnn = Encoder(INPUT_DIM, ENC_EMB_DIM, ENC_HID_DIM, DEC_HID_DIM, ENC_DROPOUT)
+    dec_rnn = Decoder(OUTPUT_DIM, DEC_EMB_DIM, ENC_HID_DIM, DEC_HID_DIM, DEC_DROPOUT)
+
+    model_rnn = Seq2SeqRNN(enc_rnn, dec_rnn, device).to(device)
+    run(model_rnn, SRC, TRG, train_data, valid_data, test_data, "nmt-model-rnn.pt")
+
+    # model.load_state_dict(torch.load("nmt-model-rnn.pt", map_location=device))
+    # model.eval()
