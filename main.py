@@ -69,7 +69,7 @@ def run(model, SRC, TRG, train_data, valid_data, test_data, model_name="nmt-mode
 
     test_loss = evaluate(model, test_iterator, criterion)
     print(f'\t Test. Loss: {test_loss:.3f}')
-    cal_bleu_score(train_data, model, SRC, TRG, device)
+    cal_bleu_score(train_data, model, SRC, TRG, device, 'rnn' not in model_name)
 
 
 if __name__ == '__main__':

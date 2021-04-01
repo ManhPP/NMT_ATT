@@ -108,7 +108,7 @@ def init_weights(m):
             nn.init.constant_(param.data, 0)
 
 
-def translate(encoder, decoder, sentence, src, trg, device, max_length=512):
+def translate(encoder, decoder, sentence, src, trg, device, max_length=512, has_attention=True):
     with torch.no_grad():
         input_tensor = [src.vocab.stoi[word] for word in sentence.split(' ')]
         input_tensor.append(src.vocab.stoi[src.eos_token])
@@ -122,24 +122,35 @@ def translate(encoder, decoder, sentence, src, trg, device, max_length=512):
 
         decoded_words = []
         decoder_attentions = []
+        if has_attention:
+            for di in range(max_length):
+                decoder_output, decoder_hidden, decoder_attention = decoder(
+                    decoder_input, decoder_hidden, encoder_outputs)
+                decoder_attentions.append(decoder_attention.data.tolist())
+                topv, topi = decoder_output.data.topk(1)
+                if topi.item() == trg.vocab.stoi[trg.eos_token]:
+                    # decoded_words.append('<EOS>')
+                    break
+                else:
+                    decoded_words.append(trg.vocab.itos[topi.item()])
 
-        for di in range(max_length):
-            decoder_output, decoder_hidden, decoder_attention = decoder(
-                decoder_input, decoder_hidden, encoder_outputs)
-            decoder_attentions.append(decoder_attention.data.tolist())
-            topv, topi = decoder_output.data.topk(1)
-            if topi.item() == trg.vocab.stoi[trg.eos_token]:
-                # decoded_words.append('<EOS>')
-                break
-            else:
-                decoded_words.append(trg.vocab.itos[topi.item()])
+                decoder_input = topi.squeeze(0).detach()
+        else:
+            for di in range(max_length):
+                decoder_output, decoder_hidden = decoder(
+                    decoder_input, decoder_hidden)
+                topv, topi = decoder_output.data.topk(1)
+                if topi.item() == trg.vocab.stoi[trg.eos_token]:
+                    break
+                else:
+                    decoded_words.append(trg.vocab.itos[topi.item()])
 
-            decoder_input = topi.squeeze(0).detach()
+                decoder_input = topi.squeeze(0).detach()
 
         return decoded_words, decoder_attentions
 
 
-def cal_bleu_score(data, model, source_vocab, target_vocab, device):
+def cal_bleu_score(data, model, source_vocab, target_vocab, device, has_attention):
     model.eval()
 
     targets = []
@@ -148,10 +159,9 @@ def cal_bleu_score(data, model, source_vocab, target_vocab, device):
     for sample in data:
         src = sample.src
         trg = sample.trg
-
         predictions.append(
-            translate(model.encoder, model.decoder, " ".join(src), source_vocab, target_vocab, device)[0])
+            translate(model.encoder, model.decoder, " ".join(src), source_vocab, target_vocab, device, has_attention)[
+                0])
         targets.append([trg])
 
     print(f'BLEU Score: {round(bleu_score(predictions, targets) * 100, 2)}')
-
