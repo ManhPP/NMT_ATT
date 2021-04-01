@@ -153,3 +153,47 @@ def cal_bleu_score(data, model, source_vocab, target_vocab, device):
         targets.append([trg])
 
     print(f'BLEU Score: {round(bleu_score(predictions, targets) * 100, 2)}')
+
+
+def translate_base(encoder, decoder, sentence, src, trg, device, max_length=512):
+    with torch.no_grad():
+        input_tensor = [src.vocab.stoi[word] for word in sentence.split(' ')]
+        input_tensor.append(src.vocab.stoi[src.eos_token])
+        input_tensor = torch.tensor(input_tensor, dtype=torch.long, device=device).view(-1, 1)
+
+        encoder_outputs, hidden = encoder(input_tensor)
+
+        decoder_input = torch.tensor([trg.vocab.stoi[trg.init_token]], device=device)
+
+        decoder_hidden = hidden
+
+        decoded_words = []
+
+        for di in range(max_length):
+            decoder_output, decoder_hidden = decoder(
+                decoder_input, decoder_hidden)
+            topv, topi = decoder_output.data.topk(1)
+            if topi.item() == trg.vocab.stoi[trg.eos_token]:
+                break
+            else:
+                decoded_words.append(trg.vocab.itos[topi.item()])
+
+            decoder_input = topi.squeeze(0).detach()
+
+        return decoded_words
+
+
+def cal_bleu_score_base(data, model, source_vocab, target_vocab, device):
+    model.eval()
+
+    targets = []
+    predictions = []
+
+    for sample in data:
+        src = sample.src
+        trg = sample.trg
+        predictions.append(
+            translate_base(model.encoder, model.decoder, " ".join(src), source_vocab, target_vocab, device))
+        targets.append([trg])
+
+    print(f'BLEU Score: {round(bleu_score(predictions, targets) * 100, 2)}')
