@@ -69,7 +69,7 @@ def run(model, SRC, TRG, train_data, valid_data, test_data, model_name="nmt-mode
 
     test_loss = evaluate(model, test_iterator, criterion)
     print(f'\t Test. Loss: {test_loss:.3f}')
-    cal_bleu_score(train_data, model, SRC, TRG, device, 'attn' in model_name)
+    cal_bleu_score(train_data, model, SRC, TRG, device)
 
 
 if __name__ == '__main__':
@@ -87,7 +87,7 @@ if __name__ == '__main__':
     SRC.build_vocab(train_data, min_freq=2)
     TRG.build_vocab(train_data, min_freq=2)
 
-    INPUT_DIM = len(SRC.vocab)
+    INPUT_DIM = 7855  # len(SRC.vocab)
     OUTPUT_DIM = len(TRG.vocab)
 
     attn = Attention(ENC_HID_DIM, DEC_HID_DIM)
@@ -95,15 +95,15 @@ if __name__ == '__main__':
     dec = Decoder(OUTPUT_DIM, DEC_EMB_DIM, ENC_HID_DIM, DEC_HID_DIM, DEC_DROPOUT, attn)
 
     model = Seq2Seq(enc, dec, device).to(device)
-    # model.load_state_dict(torch.load("nmt-model.pt", map_location=device))
-    # model.eval()
-    run(model, SRC, TRG, train_data, valid_data, test_data)
-
-    enc_rnn = Encoder(INPUT_DIM, ENC_EMB_DIM, ENC_HID_DIM, DEC_HID_DIM, ENC_DROPOUT)
-    dec_rnn = DecoderRNN(OUTPUT_DIM, DEC_EMB_DIM, ENC_HID_DIM, DEC_HID_DIM, DEC_DROPOUT)
-
-    model_rnn = Seq2SeqRNN(enc_rnn, dec_rnn, device).to(device)
-    run(model_rnn, SRC, TRG, train_data, valid_data, test_data, "nmt-model-base.pt")
+    model.load_state_dict(torch.load("nmt-model-attn.pt", map_location=device))
+    model.eval()
+    # run(model, SRC, TRG, train_data, valid_data, test_data)
+    #
+    # enc_rnn = Encoder(INPUT_DIM, ENC_EMB_DIM, ENC_HID_DIM, DEC_HID_DIM, ENC_DROPOUT)
+    # dec_rnn = DecoderRNN(OUTPUT_DIM, DEC_EMB_DIM, ENC_HID_DIM, DEC_HID_DIM, DEC_DROPOUT)
+    #
+    # model_rnn = Seq2SeqRNN(enc_rnn, dec_rnn, device).to(device)
+    # run(model_rnn, SRC, TRG, train_data, valid_data, test_data, "nmt-model-base.pt")
 
     # model.load_state_dict(torch.load("nmt-model-rnn.pt", map_location=device))
     # model.eval()
