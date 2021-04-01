@@ -139,7 +139,7 @@ def translate(encoder, decoder, sentence, src, trg, device, max_length=512):
         return decoded_words, decoder_attentions
 
 
-def cal_bleu_score(data, model, source_vocab, target_vocab, device, has_attention):
+def cal_bleu_score(data, model, source_vocab, target_vocab, device):
     model.eval()
 
     targets = []
@@ -149,8 +149,7 @@ def cal_bleu_score(data, model, source_vocab, target_vocab, device, has_attentio
         src = sample.src
         trg = sample.trg
         predictions.append(
-            translate(model.encoder, model.decoder, " ".join(src), source_vocab, target_vocab, device, has_attention)[
-                0])
+            translate(model.encoder, model.decoder, " ".join(src), source_vocab, target_vocab, device)[0])
         targets.append([trg])
 
     print(f'BLEU Score: {round(bleu_score(predictions, targets) * 100, 2)}')
