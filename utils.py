@@ -4,6 +4,8 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 from torchtext.data import bleu_score
+import matplotlib.pyplot as plt
+import matplotlib.ticker as ticker
 
 spacy_de = de_core_news_sm.load()
 spacy_en = en_core_web_sm.load()
@@ -121,13 +123,14 @@ def translate(encoder, decoder, sentence, src, trg, device, max_length=512):
         decoder_hidden = hidden
 
         decoded_words = []
-        decoder_attentions = []
+        decoder_attentions = torch.zeros(512, 1, input_tensor.shape[0]).to(device)
 
         for di in range(max_length):
             decoder_output, decoder_hidden, decoder_attention = decoder(
                 decoder_input, decoder_hidden, encoder_outputs)
-            decoder_attentions.append(decoder_attention.data.tolist())
+            decoder_attentions[di] = decoder_attention.data
             topv, topi = decoder_output.data.topk(1)
+
             if topi.item() == trg.vocab.stoi[trg.eos_token]:
                 # decoded_words.append('<EOS>')
                 break
@@ -136,7 +139,7 @@ def translate(encoder, decoder, sentence, src, trg, device, max_length=512):
 
             decoder_input = topi.squeeze(0).detach()
 
-        return decoded_words, decoder_attentions
+        return decoded_words, decoder_attentions.squeeze(1)
 
 
 def cal_bleu_score(data, model, source_vocab, target_vocab, device):
@@ -197,3 +200,21 @@ def cal_bleu_score_base(data, model, source_vocab, target_vocab, device):
         targets.append([trg])
 
     print(f'BLEU Score: {round(bleu_score(predictions, targets) * 100, 2)}')
+
+
+def display_attention(sentence, model, SRC, TRG, device):
+    r = translate(model.encoder, model.decoder, sentence, SRC, TRG, device)
+    fig = plt.figure(figsize=(20, 20))
+    ax = fig.add_subplot(111)
+    cax = ax.matshow(r[1][:len(r[0]) - 1, :-1], cmap='bone')
+
+    ax.tick_params(labelsize=15)
+    ax.set_xticklabels([''] + [t.lower() for t in sentence.split()] + [''],
+                       rotation=45)
+    ax.set_yticklabels([''] + r[0] + [''])
+
+    ax.xaxis.set_major_locator(ticker.MultipleLocator(1))
+    ax.yaxis.set_major_locator(ticker.MultipleLocator(1))
+
+    plt.show()
+    plt.close()
