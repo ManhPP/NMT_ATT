@@ -1,3 +1,7 @@
+Number of training examples: 29000
+Number of validation examples: 1014
+Number of testing examples: 1000
+
 Seq2Seq(
   (encoder): Encoder(
     (embedding): Embedding(7855, 256)

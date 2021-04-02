@@ -54,7 +54,7 @@ class Attention(nn.Module):
         batch_size = encoder_outputs.shape[1]
         src_len = encoder_outputs.shape[0]
 
-        # repeat decoder hidden state src_len times
+        # lap lai decoder hidden state src_len times
         hidden = hidden.unsqueeze(1).repeat(1, src_len, 1)
 
         encoder_outputs = encoder_outputs.permute(1, 0, 2)
@@ -133,7 +133,7 @@ class Decoder(nn.Module):
         # seq len, n layers and n directions will always be 1 in this decoder, therefore:
         # output = [1, batch size, dec hid dim]
         # hidden = [1, batch size, dec hid dim]
-        # this also means that output == hidden
+        # check output == hidden
         assert (output == hidden).all()
 
         embedded = embedded.squeeze(0)
@@ -158,39 +158,36 @@ class Seq2Seq(nn.Module):
     def forward(self, src, trg, teacher_forcing_ratio=0.5):
         # src = [src len, batch size]
         # trg = [trg len, batch size]
-        # teacher_forcing_ratio is probability to use teacher forcing
-        # e.g. if teacher_forcing_ratio is 0.75 we use teacher forcing 75% of the time
+        # teacher_forcing_ratio la xac suat su dung teacher forcing
 
         batch_size = src.shape[1]
         trg_len = trg.shape[0]
         trg_vocab_size = self.decoder.output_dim
 
-        # tensor to store decoder outputs
         outputs = torch.zeros(trg_len, batch_size, trg_vocab_size).to(self.device)
 
-        # encoder_outputs is all hidden states of the input sequence, back and forwards
-        # hidden is the final forward and backward hidden states, passed through a linear layer
+        # encoder_outputs la tat ca hidden state
+        # hidden la hidden state cuoi cung
         encoder_outputs, hidden = self.encoder(src)
 
-        # first input to the decoder is the <sos> tokens
+        # input dau tien cua decoder la <sos>
         inp = trg[0, :]
 
         for t in range(1, trg_len):
-            # insert input token embedding, previous hidden state and all encoder hidden states
-            # receive output tensor (predictions) and new hidden state
+            # truyen input token embedding, truoc hidden state va tat ca encoder hidden states
+            # nhan output tensor (predictions) va hidden state moi
             output, hidden, attn_weights = self.decoder(inp, hidden, encoder_outputs)
 
-            # place predictions in a tensor holding predictions for each token
             outputs[t] = output
 
-            # decide if we are going to use teacher forcing or not
+            # quyet dinh xem co dung teacher forcing khong
             teacher_force = random.random() < teacher_forcing_ratio
 
-            # get the highest predicted token from our predictions
+            # lay token co xs cao nhat
             top1 = output.argmax(1)
 
-            # if teacher forcing, use actual next token as next input
-            # if not, use predicted token
+            # neu su dung teacher forcing, su dung token dung nhu la input tiep theo
+            # neu khong, su dung predicted token
             inp = trg[t] if teacher_force else top1
 
         return outputs
@@ -228,39 +225,26 @@ class Seq2SeqRNN(nn.Module):
     def forward(self, src, trg, teacher_forcing_ratio=0.5):
         # src = [src len, batch size]
         # trg = [trg len, batch size]
-        # teacher_forcing_ratio is probability to use teacher forcing
-        # e.g. if teacher_forcing_ratio is 0.75 we use teacher forcing 75% of the time
 
         batch_size = src.shape[1]
         trg_len = trg.shape[0]
         trg_vocab_size = self.decoder.output_dim
 
-        # tensor to store decoder outputs
         outputs = torch.zeros(trg_len, batch_size, trg_vocab_size).to(self.device)
 
-        # encoder_outputs is all hidden states of the input sequence, back and forwards
-        # hidden is the final forward and backward hidden states, passed through a linear layer
         encoder_outputs, hidden = self.encoder(src)
 
-        # first input to the decoder is the <sos> tokens
         inp = trg[0, :]
 
         for t in range(1, trg_len):
-            # insert input token embedding, previous hidden state and all encoder hidden states
-            # receive output tensor (predictions) and new hidden state
             output, hidden = self.decoder(inp, hidden)
 
-            # place predictions in a tensor holding predictions for each token
             outputs[t] = output
 
-            # decide if we are going to use teacher forcing or not
             teacher_force = random.random() < teacher_forcing_ratio
 
-            # get the highest predicted token from our predictions
             top1 = output.argmax(1)
 
-            # if teacher forcing, use actual next token as next input
-            # if not, use predicted token
             inp = trg[t] if teacher_force else top1
 
         return outputs

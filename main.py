@@ -84,10 +84,10 @@ if __name__ == '__main__':
                 lower=True)
 
     train_data, valid_data, test_data = Multi30k.splits(exts=('.de', '.en'), fields=(SRC, TRG))
-    SRC.build_vocab(train_data, min_freq=2)
+    SRC.build_vocab(train_data, min_freq=2)  # chi cho phep cac token xuat hien it nhat 2 lan lam tu vung
     TRG.build_vocab(train_data, min_freq=2)
 
-    INPUT_DIM = len(SRC.vocab)
+    INPUT_DIM = 7855  # len(SRC.vocab)
     OUTPUT_DIM = len(TRG.vocab)
 
     attn = Attention(ENC_HID_DIM, DEC_HID_DIM)
