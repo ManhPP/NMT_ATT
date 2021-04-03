@@ -110,7 +110,9 @@ def init_weights(m):
             nn.init.constant_(param.data, 0)
 
 
-def translate(encoder, decoder, sentence, src, trg, device, max_length=512):
+def translate(model, sentence, src, trg, device, max_length=512):
+    encoder, decoder = model.encoder, model.decoder
+    sentence = sentence.lower()
     with torch.no_grad():
         input_tensor = [src.vocab.stoi[word] for word in sentence.split(' ')]
         input_tensor.append(src.vocab.stoi[src.eos_token])
@@ -152,13 +154,15 @@ def cal_bleu_score(data, model, source_vocab, target_vocab, device):
         src = sample.src
         trg = sample.trg
         predictions.append(
-            translate(model.encoder, model.decoder, " ".join(src), source_vocab, target_vocab, device)[0])
+            translate(model, " ".join(src), source_vocab, target_vocab, device)[0])
         targets.append([trg])
 
     print(f'BLEU Score: {round(bleu_score(predictions, targets) * 100, 2)}')
 
 
-def translate_base(encoder, decoder, sentence, src, trg, device, max_length=512):
+def translate_base(model, sentence, src, trg, device, max_length=512):
+    encoder, decoder = model.encoder, model.decoder
+    sentence = sentence.lower()
     with torch.no_grad():
         input_tensor = [src.vocab.stoi[word] for word in sentence.split(' ')]
         input_tensor.append(src.vocab.stoi[src.eos_token])
@@ -196,14 +200,14 @@ def cal_bleu_score_base(data, model, source_vocab, target_vocab, device):
         src = sample.src
         trg = sample.trg
         predictions.append(
-            translate_base(model.encoder, model.decoder, " ".join(src), source_vocab, target_vocab, device))
+            translate_base(model, " ".join(src), source_vocab, target_vocab, device))
         targets.append([trg])
 
     print(f'BLEU Score: {round(bleu_score(predictions, targets) * 100, 2)}')
 
 
 def display_attention(sentence, model, SRC, TRG, device):
-    r = translate(model.encoder, model.decoder, sentence, SRC, TRG, device)
+    r = translate(model, sentence, SRC, TRG, device)
     fig = plt.figure(figsize=(20, 20))
     ax = fig.add_subplot(111)
     cax = ax.matshow(r[1][:len(r[0]) - 1, :-1], cmap='bone')
