@@ -97,7 +97,7 @@ if __name__ == '__main__':
     model = Seq2Seq(enc, dec, device).to(device)
     model.load_state_dict(torch.load("nmt-model-attn.pt", map_location=device))
     model.eval()
-    display_attention(" ".join(train_data.examples[4].src), model, SRC, TRG, device)
+    display_attention(" ".join(train_data.examples[1011].src), model, SRC, TRG, device)
     # run(model, SRC, TRG, train_data, valid_data, test_data)
     #
     # enc_rnn = Encoder(INPUT_DIM, ENC_EMB_DIM, ENC_HID_DIM, DEC_HID_DIM, ENC_DROPOUT)

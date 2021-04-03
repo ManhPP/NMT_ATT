@@ -125,7 +125,7 @@ def translate(model, sentence, src, trg, device, max_length=512):
         decoder_hidden = hidden
 
         decoded_words = []
-        decoder_attentions = torch.zeros(512, 1, input_tensor.shape[0]).to(device)
+        decoder_attentions = torch.zeros(max_length, 1, input_tensor.shape[0]).to(device)
 
         for di in range(max_length):
             decoder_output, decoder_hidden, decoder_attention = decoder(
@@ -219,6 +219,7 @@ def display_attention(sentence, model, SRC, TRG, device):
 
     ax.xaxis.set_major_locator(ticker.MultipleLocator(1))
     ax.yaxis.set_major_locator(ticker.MultipleLocator(1))
-
+    print("src: ", sentence)
+    print("trg: ", " ".join(r[0]))
     plt.show()
     plt.close()
